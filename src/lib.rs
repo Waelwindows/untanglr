@@ -8,7 +8,7 @@ use std::str;
 // by default), the maximum word cost and the maximum word length
 pub struct LanguageModel {
     word_cost: HashMap<String, f64>,
-    max_wlen: u8,
+    max_wlen: usize,
 }
 
 impl LanguageModel {
@@ -18,12 +18,12 @@ impl LanguageModel {
         let dict = include_str!("dicts/english.txt");
 
         let word_count: f64 = dict.len() as f64;
-        let mut max_wlen: u8 = 0;
+        let mut max_wlen: usize = 0;
         let mut word_cost: HashMap<String, f64> = HashMap::new();
 
         for (index, line) in dict.lines().enumerate() {
             let word = line; // Ignore errors.
-            let word_len: u8 = word.chars().count() as u8;
+            let word_len: usize = word.chars().count();
             max_wlen = max(word_len, max_wlen);
 
             word_cost.insert(
@@ -88,7 +88,7 @@ impl LanguageModel {
     }
 
     fn best_match(&self, i: usize, cost: &[f64], s: &str) -> (u8, f64) {
-        let candidates = &cost[(max(0, i as i64 - self.max_wlen as i64) as usize)..i];
+        let candidates = &cost[i.saturating_sub(self.max_wlen)..i];
         let mut storedmin: (u8, f64) = (0, 9e99);
 
         for (index, &candidate) in candidates.into_iter().rev().enumerate() {
